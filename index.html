@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Tenure Timeline Calculator — Columbia HPM</title>
+<title>Tenure Timeline Calculator: Demonstration Model</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 <style>
@@ -108,7 +108,7 @@
   <div class="masthead">
     <div class="masthead-logo"><span>CU</span></div>
     <div class="masthead-text">
-      <h1>Tenure timeline calculator</h1>
+      <h1>Tenure Timeline Calculator: Demonstration Model</h1>
       <p>Columbia University — CUIMC / Mailman School of Public Health &nbsp;·&nbsp; Dept. of Health Policy &amp; Management &nbsp;·&nbsp; Research Faculty, 7-year track</p>
     </div>
   </div>
@@ -299,7 +299,9 @@ function exportCSV() {
   if (!sv) return;
   const start = new Date(sv + 'T12:00:00');
   const ms = getMilestones(start, totalExt());
-  const rows = [['Milestone', 'Phase', 'Estimated Date', 'Service Year', 'Notes'], ...ms.map(m => [m.milestone, m.phase, fmt(m.date), 'Year ' + m.yr, m.note])];
+  const extYrs = totalExt();
+  const meta = [['Appointment start', fmt(start)], extYrs > 0 ? ['Total clock extension', extYrs + ' year(s)'] : null].filter(Boolean);
+  const rows = [...meta, [], ['Milestone', 'Phase', 'Estimated Date', 'Service Year', 'Notes'], ...ms.map(m => [m.milestone, m.phase, fmt(m.date), 'Year ' + m.yr, m.note])];
   dl(new Blob([rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n')], { type: 'text/csv' }), 'tenure_timeline.csv');
 }
 
