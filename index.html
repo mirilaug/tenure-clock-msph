@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tenure Timeline Calculator — Columbia HPM</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #185FA5;
+    --blue-light: #E6F1FB;
+    --green: #0F6E56;
+    --green-light: #E1F5EE;
+    --amber: #854F0B;
+    --amber-light: #FAEEDA;
+    --gray: #5F5E5A;
+    --gray-light: #F1EFE8;
+    --border: #d4d2c9;
+    --text: #1a1a18;
+    --muted: #5F5E5A;
+    --hint: #888780;
+    --bg: #ffffff;
+    --surface: #f8f7f4;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; background: var(--surface); color: var(--text); font-size: 14px; line-height: 1.6; min-height: 100vh; }
+  .page { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+  .masthead { border-bottom: 2px solid var(--green); padding-bottom: 1.25rem; margin-bottom: 2rem; display: flex; align-items: flex-start; gap: 16px; }
+  .masthead-logo { width: 48px; height: 48px; background: var(--green); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .masthead-logo span { color: white; font-weight: 700; font-size: 18px; letter-spacing: -1px; }
+  .masthead-text h1 { font-size: 20px; font-weight: 600; color: var(--text); }
+  .masthead-text p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .tab-bar { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 2rem; gap: 0; }
+  .tab { padding: 9px 18px; font-size: 13px; font-weight: 500; color: var(--hint); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; border-top: none; border-left: none; border-right: none; font-family: inherit; transition: color 0.15s; }
+  .tab.active { color: var(--green); border-bottom-color: var(--green); }
+  .tab:hover:not(.active) { color: var(--muted); }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; }
+  .card-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--hint); margin-bottom: 1rem; }
+  .row { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .field input[type=date], .field input[type=number], .field input[type=text] {
+    height: 36px; padding: 0 10px; border: 1px solid var(--border); border-radius: 7px;
+    background: var(--bg); color: var(--text); font-size: 13px; font-family: inherit; min-width: 160px;
+    transition: border-color 0.15s;
+  }
+  .field input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(15,110,86,0.1); }
+  .ext-tags { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 6px; min-height: 28px; }
+  .ext-tag { display: inline-flex; align-items: center; gap: 5px; background: var(--green-light); border: 1px solid #9FE1CB; border-radius: 6px; padding: 3px 9px; font-size: 12px; color: var(--green); font-weight: 500; }
+  .ext-tag button { border: none; background: none; color: var(--green); cursor: pointer; font-size: 14px; padding: 0; line-height: 1; font-weight: 600; }
+  .ext-add-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+  .btn { height: 34px; padding: 0 14px; border: 1px solid var(--border); border-radius: 7px; background: var(--bg); color: var(--muted); font-size: 13px; cursor: pointer; font-family: inherit; font-weight: 500; transition: all 0.15s; }
+  .btn:hover { background: var(--surface); border-color: var(--green); color: var(--green); }
+  .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--muted); cursor: pointer; font-family: inherit; font-weight: 500; transition: all 0.15s; }
+  .btn-sm:hover { background: var(--surface); border-color: var(--green); color: var(--green); }
+  .btn-primary { background: var(--green); color: white; border-color: var(--green); }
+  .btn-primary:hover { background: #0c5c47; border-color: #0c5c47; color: white; }
+  .section-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; color: var(--hint); padding: 12px 0 6px; border-top: 1px solid var(--border); margin-top: 4px; }
+  table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.tbl th { text-align: left; font-size: 10px; font-weight: 600; color: var(--hint); text-transform: uppercase; letter-spacing: 0.07em; padding: 6px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  table.tbl td { padding: 9px 8px; border-bottom: 1px solid #f0ede8; color: var(--text); vertical-align: top; }
+  table.tbl tr:last-child td { border-bottom: none; }
+  table.tbl tr:hover td { background: var(--surface); }
+  .ms { font-weight: 500; }
+  .dt { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--muted); }
+  .dt.anc { color: var(--blue); font-weight: 500; }
+  .nt { font-size: 11px; color: var(--hint); line-height: 1.5; max-width: 200px; }
+  .badge { display: inline-block; padding: 2px 7px; border-radius: 5px; font-size: 10px; font-weight: 600; letter-spacing: 0.03em; }
+  .b-yr { background: var(--gray-light); color: var(--gray); }
+  .b-key { background: var(--blue-light); color: var(--blue); }
+  .b-warn { background: var(--amber-light); color: var(--amber); }
+  .b-anc { background: var(--blue-light); color: var(--blue); font-size: 9px; }
+  .caveat { margin-top: 1rem; padding: 10px 14px; background: var(--amber-light); border-radius: 8px; font-size: 12px; color: var(--amber); line-height: 1.7; border-left: 3px solid #EF9F27; }
+  .exp-row { display: flex; gap: 8px; margin-top: 1.25rem; flex-wrap: wrap; padding-top: 1rem; border-top: 1px solid var(--border); }
+  .empty { padding: 2.5rem 0; text-align: center; color: var(--hint); font-size: 13px; }
+  .dept-person-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 10px; }
+  .dept-person-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .dept-person-header span { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .del-btn { border: none; background: none; color: var(--hint); cursor: pointer; font-size: 18px; line-height: 1; padding: 0 4px; }
+  .del-btn:hover { color: #A32D2D; }
+  .dept-scroll { overflow-x: auto; }
+  .dept-tbl th { white-space: nowrap; }
+  .name-cell { font-weight: 500; white-space: nowrap; }
+  .dt2 { font-size: 12px; white-space: nowrap; color: var(--muted); }
+  .soon { color: var(--amber) !important; font-weight: 500; }
+  .ext-note { font-size: 12px; color: var(--muted); margin-bottom: 8px; padding: 6px 10px; background: var(--green-light); border-radius: 6px; }
+  .info-box { background: var(--blue-light); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: var(--blue); line-height: 1.7; margin-bottom: 1rem; border-left: 3px solid #85B7EB; }
+  @media print {
+    .tab-bar, .exp-row, .btn, .btn-sm, .dept-person-card, #panel-dept { display: none !important; }
+    .panel { display: block !important; }
+    body { background: white; }
+    .card { border: none; padding: 0; }
+    .masthead { border-bottom: 2px solid #0F6E56; }
+  }
+  @media (max-width: 600px) {
+    .page { padding: 1rem; }
+    .masthead h1 { font-size: 16px; }
+    table.tbl th:nth-child(4), table.tbl td:nth-child(4),
+    table.tbl th:nth-child(5), table.tbl td:nth-child(5) { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="masthead">
+    <div class="masthead-logo"><span>CU</span></div>
+    <div class="masthead-text">
+      <h1>Tenure timeline calculator</h1>
+      <p>Columbia University — CUIMC / Mailman School of Public Health &nbsp;·&nbsp; Dept. of Health Policy &amp; Management &nbsp;·&nbsp; Research Faculty, 7-year track</p>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab active" onclick="switchTab('individual', this)">Individual calculator</button>
+    <button class="tab" onclick="switchTab('dept', this)">Departmental view</button>
+  </div>
+
+  <!-- INDIVIDUAL PANEL -->
+  <div id="panel-individual" class="panel active">
+    <div class="card">
+      <div class="card-title">Candidate details</div>
+      <div class="row" style="margin-bottom:1rem;">
+        <div class="field">
+          <label>Appointment start date</label>
+          <input type="date" id="startDate" oninput="renderIndividual()" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Clock extensions</label>
+        <div class="ext-tags" id="extTags"></div>
+        <div class="ext-add-row">
+          <input type="number" id="extInput" min="0.5" max="3" step="0.5" placeholder="Years (e.g. 1)" style="width:140px;" />
+          <button class="btn-sm" onclick="addExt()">+ Add extension</button>
+        </div>
+      </div>
+    </div>
+    <div id="ind-output"></div>
+  </div>
+
+  <!-- DEPT PANEL -->
+  <div id="panel-dept" class="panel">
+    <div class="card">
+      <div class="card-title">Faculty candidates</div>
+      <div id="dept-people"></div>
+      <button class="btn-sm btn-primary" onclick="addPerson()" style="margin-top:4px;">+ Add faculty member</button>
+    </div>
+    <div id="dept-output"></div>
+  </div>
+</div>
+
+<script>
+const extensions = [];
+const deptPeople = [];
+let deptIdCtr = 0;
+
+function switchTab(t, el) {
+  document.querySelectorAll('.tab').forEach(e => e.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(e => e.classList.remove('active'));
+  document.getElementById('panel-' + t).classList.add('active');
+  el.classList.add('active');
+}
+
+function addExt() {
+  const v = parseFloat(document.getElementById('extInput').value);
+  if (!v || v <= 0) return;
+  extensions.push(v);
+  document.getElementById('extInput').value = '';
+  renderIndividual();
+}
+function removeExt(i) { extensions.splice(i, 1); renderIndividual(); }
+function totalExt() { return extensions.reduce((a, b) => a + b, 0); }
+
+function fmt(d) { return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+
+function dateAt(base, extYrs, yearOffset, month, day) {
+  return new Date(base.getFullYear() + yearOffset + extYrs, month - 1, day);
+}
+
+function getMilestones(start, extYrs) {
+  const y = start.getFullYear();
+  return [
+    { milestone: '4th year review', phase: 'Review', date: new Date(y + 4, 4, 31), anchored: true, yr: '4', badge: 'key', note: 'Anchored to hire date — not affected by extensions.' },
+    { milestone: 'Department vote', phase: 'Preparation', date: dateAt(start, extYrs, 6, 2, 1), anchored: false, yr: String(6 + extYrs), badge: '', note: '' },
+    { milestone: 'Dossier to SVP', phase: 'Preparation', date: dateAt(start, extYrs, 6, 5, 15), anchored: false, yr: String(6 + extYrs), badge: '', note: '' },
+    { milestone: 'SVP letter requests sent', phase: 'Preparation', date: dateAt(start, extYrs, 6, 5, 30), anchored: false, yr: String(6 + extYrs), badge: '', note: '' },
+    { milestone: 'SVP referee receipt window', phase: 'External review', date: dateAt(start, extYrs, 6, 7, 1), anchored: false, yr: String(6 + extYrs), badge: '', note: 'Letters shared with dept. as they arrive.' },
+    { milestone: 'Dept. COAP review', phase: 'Stage 1', date: dateAt(start, extYrs, 6, 6, 1), anchored: false, yr: String(6 + extYrs), badge: '', note: '' },
+    { milestone: 'Mailman COAP review', phase: 'Stage 2', date: dateAt(start, extYrs, 6, 10, 1), anchored: false, yr: String(6 + extYrs), badge: '', note: 'Requires Stage 1 approval.' },
+    { milestone: 'CUIMC COAP review', phase: 'Stage 2', date: dateAt(start, extYrs, 6, 11, 1), anchored: false, yr: String(6 + extYrs), badge: '', note: '' },
+    { milestone: 'Dossier to TRAC', phase: 'Stage 3', date: dateAt(start, extYrs, 6, 12, 15), anchored: false, yr: String(6 + extYrs), badge: '', note: 'Forwarded by OFA after CUIMC COAP.' },
+    { milestone: 'TRAC review complete', phase: 'Stage 3', date: dateAt(start, extYrs, 7, 5, 31), anchored: false, yr: String(7 + extYrs), badge: '', note: '' },
+    { milestone: 'Tenure effective (if approved)', phase: 'Promotion', date: dateAt(start, extYrs, 7, 7, 1), anchored: false, yr: String(7 + extYrs), badge: 'key', note: 'July 1 following Provost/Trustees approval.' },
+    { milestone: 'Up-or-out date', phase: 'Terminal', date: dateAt(start, extYrs, 8, 6, 30), anchored: false, yr: String(8 + extYrs), badge: 'warn', note: 'Appointment ends if tenure not granted.' },
+  ];
+}
+
+function renderExtTags() {
+  document.getElementById('extTags').innerHTML = extensions.map((e, i) =>
+    `<div class="ext-tag">+${e} yr <button onclick="removeExt(${i})">×</button></div>`
+  ).join('') || '<span style="font-size:12px;color:var(--hint);">No extensions added</span>';
+}
+
+function renderIndividual() {
+  renderExtTags();
+  const sv = document.getElementById('startDate').value;
+  const out = document.getElementById('ind-output');
+  if (!sv) { out.innerHTML = '<div class="empty">Enter an appointment start date above to generate the timeline.</div>'; return; }
+  const start = new Date(sv + 'T12:00:00');
+  const extYrs = totalExt();
+  const ms = getMilestones(start, extYrs);
+  const isJan = start.getMonth() === 0;
+  const extNote = extYrs > 0 ? `<div class="ext-note">Total clock extension: <strong>${extYrs} year${extYrs !== 1 ? 's' : ''}</strong> — applied to all milestones except the 4th year review.</div>` : '';
+  const rows = ms.map(m => {
+    const bh = m.badge === 'key' ? ' <span class="badge b-key">Key date</span>' : m.badge === 'warn' ? ' <span class="badge b-warn">Terminal</span>' : '';
+    const ancBadge = m.anchored ? ' <span class="badge b-anc">Anchored</span>' : '';
+    return `<tr>
+      <td class="ms">${m.milestone}${bh}</td>
+      <td class="dt">${m.phase}</td>
+      <td class="${m.anchored ? 'dt anc' : 'dt'}">${fmt(m.date)}${ancBadge}</td>
+      <td><span class="badge b-yr">Yr ${m.yr}</span></td>
+      <td class="nt">${m.note}</td>
+    </tr>`;
+  }).join('');
+  const cav = isJan ? `<div class="caveat"><strong>January start date detected.</strong> The 4th year review date is calculated from your January hire year. All other milestones use July 1 as the academic year anchor. Please verify milestone dates with the Office of Faculty Affairs, as January appointments may have institution-specific adjustments.</div>` : '';
+  out.innerHTML = `${extNote}
+    <div class="section-label">Timeline milestones</div>
+    <div style="overflow-x:auto;">
+      <table class="tbl">
+        <thead><tr><th style="min-width:190px;">Milestone</th><th>Phase</th><th style="min-width:140px;">Estimated date</th><th>Service yr</th><th>Notes</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    ${cav}
+    <div class="exp-row">
+      <button class="btn btn-primary" onclick="exportPDF()">Export PDF</button>
+      <button class="btn" onclick="exportICS()">Export .ics calendar</button>
+      <button class="btn" onclick="exportCSV()">Export .csv</button>
+    </div>`;
+}
+
+function exportPDF() {
+  const sv = document.getElementById('startDate').value;
+  if (!sv) return;
+  const start = new Date(sv + 'T12:00:00');
+  const extYrs = totalExt();
+  const ms = getMilestones(start, extYrs);
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+  doc.setFontSize(15); doc.setFont(undefined, 'bold');
+  doc.text('Tenure Timeline — Columbia University', 14, 18);
+  doc.setFontSize(8.5); doc.setFont(undefined, 'normal'); doc.setTextColor(90, 90, 90);
+  doc.text('CUIMC / Mailman School of Public Health · Dept. of Health Policy & Management · Research Faculty, 7-year track', 14, 24);
+  doc.text(`Appointment start: ${fmt(start)}${extYrs > 0 ? '   |   Total clock extension: ' + extYrs + ' year(s)' : ''}`, 14, 29);
+  doc.setTextColor(0, 0, 0);
+  doc.autoTable({
+    startY: 34,
+    head: [['Milestone', 'Phase', 'Estimated Date', 'Service Yr', 'Notes']],
+    body: ms.map(m => [m.milestone, m.phase, fmt(m.date), 'Year ' + m.yr, m.note]),
+    styles: { fontSize: 8, cellPadding: 2.5, textColor: [30, 30, 28] },
+    headStyles: { fillColor: [15, 110, 86], textColor: 255, fontStyle: 'bold' },
+    alternateRowStyles: { fillColor: [245, 250, 248] },
+    columnStyles: { 0: { cellWidth: 52 }, 1: { cellWidth: 26 }, 2: { cellWidth: 28 }, 3: { cellWidth: 16 }, 4: { cellWidth: 55 } },
+  });
+  const finalY = doc.lastAutoTable.finalY + 6;
+  if (start.getMonth() === 0) {
+    doc.setFontSize(7.5); doc.setTextColor(133, 79, 11);
+    doc.text('Note: January start detected. 4th year review anchored to hire year. Verify all dates with the Office of Faculty Affairs.', 14, finalY);
+  }
+  doc.save('tenure_timeline.pdf');
+}
+
+function exportICS() {
+  const sv = document.getElementById('startDate').value;
+  if (!sv) return;
+  const start = new Date(sv + 'T12:00:00');
+  const ms = getMilestones(start, totalExt());
+  const icsD = d => d.toISOString().replace(/[-:]/g, '').slice(0, 8);
+  const events = ms.map(m => [
+    'BEGIN:VEVENT',
+    `DTSTART;VALUE=DATE:${icsD(m.date)}`,
+    `DTEND;VALUE=DATE:${icsD(m.date)}`,
+    `SUMMARY:${m.milestone} (Tenure — Columbia HPM)`,
+    `DESCRIPTION:Phase: ${m.phase}\\nService Year: ${m.yr}\\n${m.note}`,
+    'END:VEVENT'
+  ].join('\r\n')).join('\r\n');
+  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'CALSCALE:GREGORIAN', 'PRODID:-//Columbia HPM Tenure Calculator//EN', events, 'END:VCALENDAR'].join('\r\n');
+  dl(new Blob([ics], { type: 'text/calendar' }), 'tenure_timeline.ics');
+}
+
+function exportCSV() {
+  const sv = document.getElementById('startDate').value;
+  if (!sv) return;
+  const start = new Date(sv + 'T12:00:00');
+  const ms = getMilestones(start, totalExt());
+  const rows = [['Milestone', 'Phase', 'Estimated Date', 'Service Year', 'Notes'], ...ms.map(m => [m.milestone, m.phase, fmt(m.date), 'Year ' + m.yr, m.note])];
+  dl(new Blob([rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n')], { type: 'text/csv' }), 'tenure_timeline.csv');
+}
+
+function dl(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); }
+
+function addPerson() {
+  const id = ++deptIdCtr;
+  deptPeople.push({ id, name: '', start: '', exts: [] });
+  renderDept();
+  setTimeout(() => { const el = document.getElementById('pname-' + id); if (el) el.focus(); }, 50);
+}
+function removePerson(id) { const i = deptPeople.findIndex(p => p.id === id); if (i > -1) deptPeople.splice(i, 1); renderDept(); }
+function updatePerson(id, field, val) { const p = deptPeople.find(p => p.id === id); if (p) p[field] = val; renderDeptOutput(); }
+function addPersonExt(id) {
+  const inp = document.getElementById('pext-' + id);
+  const v = parseFloat(inp.value);
+  if (!v || v <= 0) return;
+  const p = deptPeople.find(p => p.id === id);
+  if (p) { p.exts.push(v); inp.value = ''; }
+  renderDept();
+}
+function removePersonExt(id, i) { const p = deptPeople.find(p => p.id === id); if (p) p.exts.splice(i, 1); renderDept(); }
+
+function renderDept() {
+  const peopleDiv = document.getElementById('dept-people');
+  if (deptPeople.length === 0) {
+    peopleDiv.innerHTML = '<div class="empty" style="padding:1rem 0 1.5rem;">Add faculty members using the button below.</div>';
+    document.getElementById('dept-output').innerHTML = '';
+    return;
+  }
+  peopleDiv.innerHTML = deptPeople.map(p => {
+    const totalE = p.exts.reduce((a, b) => a + b, 0);
+    const extTagsHtml = p.exts.map((e, i) => `<div class="ext-tag">+${e}yr <button onclick="removePersonExt(${p.id},${i})">×</button></div>`).join('');
+    return `<div class="dept-person-card">
+      <div class="dept-person-header"><span>Faculty member</span><button class="del-btn" onclick="removePerson(${p.id})">×</button></div>
+      <div class="row">
+        <div class="field"><label>Name</label><input type="text" id="pname-${p.id}" value="${p.name}" placeholder="Full name" style="width:180px;" oninput="updatePerson(${p.id},'name',this.value)" /></div>
+        <div class="field"><label>Start date</label><input type="date" id="pstart-${p.id}" value="${p.start}" oninput="updatePerson(${p.id},'start',this.value)" /></div>
+        <div class="field" style="flex:1;min-width:200px;">
+          <label>Extensions${totalE > 0 ? ' (total: ' + totalE + ' yr)' : ''}</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:4px;">
+            ${extTagsHtml}
+            <input type="number" id="pext-${p.id}" min="0.5" max="3" step="0.5" placeholder="yrs" style="width:70px;min-width:0;height:28px;padding:0 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;" />
+            <button class="btn-sm" onclick="addPersonExt(${p.id})">+ Add</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  renderDeptOutput();
+}
+
+function renderDeptOutput() {
+  const valid = deptPeople.filter(p => p.name && p.start);
+  const out = document.getElementById('dept-output');
+  if (!valid.length) { out.innerHTML = ''; return; }
+  const now = new Date();
+  const keyMs = ['4th year review', 'Department vote', 'Dossier to SVP', 'Tenure effective (if approved)', 'Up-or-out date'];
+  const headerCols = keyMs.map(m => `<th>${m}</th>`).join('');
+  const bodyRows = valid.map(p => {
+    const start = new Date(p.start + 'T12:00:00');
+    const extYrs = p.exts.reduce((a, b) => a + b, 0);
+    const ms = getMilestones(start, extYrs);
+    const dates = keyMs.map(name => {
+      const m = ms.find(x => x.milestone === name);
+      if (!m) return '<td class="dt2">—</td>';
+      const daysAway = (m.date - now) / (1000 * 60 * 60 * 24);
+      const cls = daysAway < 365 && daysAway > 0 ? 'dt2 soon' : 'dt2';
+      return `<td class="${cls}">${fmt(m.date)}</td>`;
+    }).join('');
+    const extLabel = extYrs > 0 ? ` <span class="badge b-key">+${extYrs}yr</span>` : '';
+    return `<tr><td class="name-cell">${p.name}${extLabel}</td><td class="dt2">${fmt(start)}</td>${dates}</tr>`;
+  }).join('');
+  out.innerHTML = `
+    <div class="info-box">Dates within the next 12 months are highlighted in amber. This view shows key deadlines only — use the Individual calculator for the full timeline.</div>
+    <div style="overflow-x:auto;">
+      <table class="tbl dept-tbl">
+        <thead><tr><th style="min-width:160px;">Faculty member</th><th>Start date</th>${headerCols}</tr></thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+    </div>
+    <div class="exp-row">
+      <button class="btn btn-primary" onclick="exportDeptPDF()">Export dept. PDF</button>
+      <button class="btn" onclick="exportDeptCSV()">Export dept. .csv</button>
+    </div>`;
+}
+
+function exportDeptPDF() {
+  const valid = deptPeople.filter(p => p.name && p.start);
+  if (!valid.length) return;
+  const keyMs = ['4th year review', 'Department vote', 'Dossier to SVP', 'Tenure effective (if approved)', 'Up-or-out date'];
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'letter' });
+  doc.setFontSize(13); doc.setFont(undefined, 'bold');
+  doc.text('Departmental Tenure Timeline — Columbia University', 14, 16);
+  doc.setFontSize(8); doc.setFont(undefined, 'normal'); doc.setTextColor(90, 90, 90);
+  doc.text('CUIMC / Mailman School of Public Health · Dept. of Health Policy & Management', 14, 21);
+  doc.setTextColor(0, 0, 0);
+  const head = [['Faculty member', 'Start date', ...keyMs]];
+  const body = valid.map(p => {
+    const start = new Date(p.start + 'T12:00:00');
+    const extYrs = p.exts.reduce((a, b) => a + b, 0);
+    const ms = getMilestones(start, extYrs);
+    const dates = keyMs.map(name => { const m = ms.find(x => x.milestone === name); return m ? fmt(m.date) : '—'; });
+    return [p.name + (extYrs > 0 ? ` (+${extYrs}yr)` : ''), fmt(start), ...dates];
+  });
+  doc.autoTable({ startY: 26, head, body, styles: { fontSize: 7.5, cellPadding: 2, textColor: [30, 30, 28] }, headStyles: { fillColor: [15, 110, 86], textColor: 255, fontStyle: 'bold' }, alternateRowStyles: { fillColor: [245, 250, 248] } });
+  doc.save('dept_tenure_timelines.pdf');
+}
+
+function exportDeptCSV() {
+  const valid = deptPeople.filter(p => p.name && p.start);
+  if (!valid.length) return;
+  const keyMs = ['4th year review', 'Department vote', 'Dossier to SVP', 'Tenure effective (if approved)', 'Up-or-out date'];
+  const rows = [['Faculty member', 'Start date', 'Extension (yrs)', ...keyMs]];
+  valid.forEach(p => {
+    const start = new Date(p.start + 'T12:00:00');
+    const extYrs = p.exts.reduce((a, b) => a + b, 0);
+    const ms = getMilestones(start, extYrs);
+    const dates = keyMs.map(name => { const m = ms.find(x => x.milestone === name); return m ? fmt(m.date) : '—'; });
+    rows.push([p.name, fmt(start), extYrs, ...dates]);
+  });
+  dl(new Blob([rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n')], { type: 'text/csv' }), 'dept_tenure_timelines.csv');
+}
+
+renderIndividual();
+renderDept();
+</script>
+</body>
+</html>
