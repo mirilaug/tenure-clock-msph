@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Tenure Timeline Calculator — Columbia HPM</title>
+<title>Tenure Timeline Calculator: Demonstration Model</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 <style>
@@ -88,8 +88,17 @@
   .soon { color: var(--amber) !important; font-weight: 500; }
   .ext-note { font-size: 12px; color: var(--muted); margin-bottom: 8px; padding: 6px 10px; background: var(--green-light); border-radius: 6px; }
   .info-box { background: var(--blue-light); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: var(--blue); line-height: 1.7; margin-bottom: 1rem; border-left: 3px solid #85B7EB; }
+  .faq-item { border-bottom: 1px solid var(--border); }
+  .faq-item:last-child { border-bottom: none; }
+  .faq-item summary { padding: 12px 4px; font-size: 14px; font-weight: 500; color: var(--text); cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary::after { content: '+'; font-size: 20px; font-weight: 300; color: var(--hint); flex-shrink: 0; }
+  .faq-item[open] summary::after { content: '−'; }
+  .faq-item summary:hover { color: var(--green); }
+  .faq-answer { padding: 2px 4px 16px; font-size: 13px; color: var(--muted); line-height: 1.85; }
+  .faq-answer a { color: var(--blue); }
   @media print {
-    .tab-bar, .exp-row, .btn, .btn-sm, .dept-person-card, #panel-dept { display: none !important; }
+    .tab-bar, .exp-row, .btn, .btn-sm, .dept-person-card, #panel-dept, #panel-faq { display: none !important; }
     .panel { display: block !important; }
     body { background: white; }
     .card { border: none; padding: 0; }
@@ -108,7 +117,7 @@
   <div class="masthead">
     <div class="masthead-logo"><span>CU</span></div>
     <div class="masthead-text">
-      <h1>Tenure timeline calculator</h1>
+      <h1>Tenure Timeline Calculator: Demonstration Model</h1>
       <p>Columbia University — CUIMC / Mailman School of Public Health &nbsp;·&nbsp; Dept. of Health Policy &amp; Management &nbsp;·&nbsp; Research Faculty, 7-year track</p>
     </div>
   </div>
@@ -117,9 +126,19 @@
     <strong>Demo version — for administrative review only.</strong> All milestone dates are estimates based on the assumptions built into this tool and have not yet been verified against current Columbia University policy. Do not rely on these dates for any formal purpose. Please verify all deadlines with the Office of Faculty Affairs before sharing with faculty.
   </div>
 
+  <div style="margin-bottom: 1.5rem; padding: 14px 18px; background: var(--blue-light); border-left: 4px solid #85B7EB; border-radius: 8px; font-size: 13px; color: var(--blue); line-height: 1.9;">
+    <strong>How to use this tool</strong>
+    <ol style="margin: 6px 0 0 18px; padding: 0;">
+      <li><strong>Individual calculator:</strong> Enter a faculty member's appointment start date. The full tenure timeline will generate automatically. Add clock extensions (e.g. parental leave) if applicable.</li>
+      <li><strong>Departmental view:</strong> Add multiple faculty members to compare key deadlines side-by-side across the department.</li>
+      <li><strong>Export:</strong> Use the Export buttons to download the timeline as a PDF, .ics calendar file, or .csv spreadsheet.</li>
+    </ol>
+  </div>
+
   <div class="tab-bar">
     <button class="tab active" onclick="switchTab('individual', this)">Individual calculator</button>
     <button class="tab" onclick="switchTab('dept', this)">Departmental view</button>
+    <button class="tab" onclick="switchTab('faq', this)">FAQ</button>
   </div>
 
   <!-- INDIVIDUAL PANEL -->
@@ -152,6 +171,59 @@
       <button class="btn-sm btn-primary" onclick="addPerson()" style="margin-top:4px;">+ Add faculty member</button>
     </div>
     <div id="dept-output"></div>
+  </div>
+
+  <!-- FAQ PANEL -->
+  <div id="panel-faq" class="panel">
+    <div class="card">
+      <div class="card-title">Frequently asked questions</div>
+
+      <div class="caveat" style="margin-bottom: 1.25rem;">
+        <strong>Important disclaimer.</strong> This tool was built from Columbia University policy documents and reflects the logic as currently implemented. It does not constitute legal or official Human Resources or Columbia University advice. All dates produced by the calculator are estimates and should be verified with the Office of Faculty Affairs before being relied upon for any formal purpose.
+      </div>
+
+      <details class="faq-item">
+        <summary>What is the Tenure Timeline Calculator?</summary>
+        <div class="faq-answer">
+          The calculator was built using Columbia University policy documents to model the tenure-track process. It takes an appointment start date and generates a full timeline of milestones — department vote, COAP stages, TRAC review, promotion, and up-or-out date — with all dates calculated automatically. It also handles clock extensions, which can cause real confusion about which deadlines shift and which don't. For example, the fourth-year review is anchored to the hire date and is not affected by extensions.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>How do I access it, and is it publicly available?</summary>
+        <div class="faq-answer">
+          You can access the demo version at <a href="https://mirilaug.github.io/tenure-clock-msph/" target="_blank" rel="noopener">https://mirilaug.github.io/tenure-clock-msph/</a>. In order to allow demo access it has been made publicly available; a significant disclaimer is included on the page.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Who is it for?</summary>
+        <div class="faq-answer">
+          Right now it is mainly for faculty, but there is also a departmental view that allows administrators or mentors to enter a name and start date for multiple faculty members at once and compare key deadlines side-by-side.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Is this a final or provisional version?</summary>
+        <div class="faq-answer">
+          This is a provisional version, subject to administrative review and policy verification. It currently applies only to research faculty on the 7-year tenure track.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Can I export the data generated?</summary>
+        <div class="faq-answer">
+          Yes. The individual calculator provides export options for PDF, calendar (.ics), and spreadsheet (.csv). The departmental view also supports PDF and .csv export.
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>Privacy — what data does this tool collect or store?</summary>
+        <div class="faq-answer">
+          This is a demo version and does not ask for a name in the individual calculator — only a start date. The departmental view does include a name field for convenience. No data is transmitted or stored anywhere; everything runs locally in your browser. As a precaution, please avoid entering real names in the departmental view.
+        </div>
+      </details>
+    </div>
   </div>
 </div>
 
@@ -299,7 +371,9 @@ function exportCSV() {
   if (!sv) return;
   const start = new Date(sv + 'T12:00:00');
   const ms = getMilestones(start, totalExt());
-  const rows = [['Milestone', 'Phase', 'Estimated Date', 'Service Year', 'Notes'], ...ms.map(m => [m.milestone, m.phase, fmt(m.date), 'Year ' + m.yr, m.note])];
+  const extYrs = totalExt();
+  const meta = [['Appointment start', fmt(start)], extYrs > 0 ? ['Total clock extension', extYrs + ' year(s)'] : null].filter(Boolean);
+  const rows = [...meta, [], ['Milestone', 'Phase', 'Estimated Date', 'Service Year', 'Notes'], ...ms.map(m => [m.milestone, m.phase, fmt(m.date), 'Year ' + m.yr, m.note])];
   dl(new Blob([rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n')], { type: 'text/csv' }), 'tenure_timeline.csv');
 }
 
