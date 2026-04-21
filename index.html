@@ -255,21 +255,56 @@ function dateAt(base, extYrs, yearOffset, month, day) {
   return new Date(base.getFullYear() + yearOffset + extYrs, month - 1, day);
 }
 
+/*
+ * CORRECTIONS — April 2026 (based on Mailman/HPM departmental review feedback)
+ *
+ * The original milestones reflected CUIMC-generic timelines rather than
+ * Mailman-specific process steps. The following changes were made:
+ *
+ * 1. DEPARTMENT VOTE: moved from Feb of year 6 → Oct of year 5.
+ *    The vote happens earlier than originally coded, in the year before
+ *    the COAP process begins.
+ *
+ * 2. NEW MILESTONE ADDED: "Candidate nominations with dept. vote to Vice Dean"
+ *    (Dec, year 5). This Mailman-specific step — transmitting the dept. vote
+ *    to the Vice Dean — was missing entirely from the original.
+ *
+ * 3. "Dossier to SVP" renamed → "Full dossier solicitation materials to Vice Dean"
+ *    and moved from May 15 → Feb 1 of year 6. The original used CUIMC
+ *    terminology ("SVP") and the wrong month.
+ *
+ * 4. "SVP letter requests sent" renamed → "Vice Dean letter solicitation"
+ *    and moved from May 30 → Mar 1 of year 6. Same issue — CUIMC label
+ *    and wrong month.
+ *
+ * 5. "SVP referee receipt window" (Jul, year 6) removed. This was a
+ *    CUIMC-specific step not part of the Mailman process as described.
+ *
+ * 6. MAILMAN COAP: moved from Oct 1 → Sept 1 of year 6.
+ *    The Mailman school-level COAP review occurs in September, not October.
+ *    (CUIMC COAP in November is unchanged and correct.)
+ *
+ * All other milestones (4th year review, Dept. COAP Stage 1, CUIMC COAP,
+ * TRAC dates, tenure effective, up-or-out) were already correct.
+ *
+ * Source: HPM departmental review, April 2026. Verify against current
+ * Office of Faculty Affairs guidance before distributing to faculty.
+ */
 function getMilestones(start, extYrs) {
   const y = start.getFullYear();
   return [
-    { milestone: '4th year review', phase: 'Review', date: new Date(y + 4, 4, 31), anchored: true, yr: '4', badge: 'key', note: 'Anchored to hire date — not affected by extensions.' },
-    { milestone: 'Department vote', phase: 'Preparation', date: dateAt(start, extYrs, 6, 2, 1), anchored: false, yr: String(6 + extYrs), badge: '', note: '' },
-    { milestone: 'Dossier to SVP', phase: 'Preparation', date: dateAt(start, extYrs, 6, 5, 15), anchored: false, yr: String(6 + extYrs), badge: '', note: '' },
-    { milestone: 'SVP letter requests sent', phase: 'Preparation', date: dateAt(start, extYrs, 6, 5, 30), anchored: false, yr: String(6 + extYrs), badge: '', note: '' },
-    { milestone: 'SVP referee receipt window', phase: 'External review', date: dateAt(start, extYrs, 6, 7, 1), anchored: false, yr: String(6 + extYrs), badge: '', note: 'Letters shared with dept. as they arrive.' },
-    { milestone: 'Dept. COAP review', phase: 'Stage 1', date: dateAt(start, extYrs, 6, 6, 1), anchored: false, yr: String(6 + extYrs), badge: '', note: '' },
-    { milestone: 'Mailman COAP review', phase: 'Stage 2', date: dateAt(start, extYrs, 6, 10, 1), anchored: false, yr: String(6 + extYrs), badge: '', note: 'Requires Stage 1 approval.' },
-    { milestone: 'CUIMC COAP review', phase: 'Stage 2', date: dateAt(start, extYrs, 6, 11, 1), anchored: false, yr: String(6 + extYrs), badge: '', note: '' },
-    { milestone: 'Dossier to TRAC', phase: 'Stage 3', date: dateAt(start, extYrs, 6, 12, 15), anchored: false, yr: String(6 + extYrs), badge: '', note: 'Forwarded by OFA after CUIMC COAP.' },
-    { milestone: 'TRAC review complete', phase: 'Stage 3', date: dateAt(start, extYrs, 7, 5, 31), anchored: false, yr: String(7 + extYrs), badge: '', note: '' },
-    { milestone: 'Tenure effective (if approved)', phase: 'Promotion', date: dateAt(start, extYrs, 7, 7, 1), anchored: false, yr: String(7 + extYrs), badge: 'key', note: 'July 1 following Provost/Trustees approval.' },
-    { milestone: 'Up-or-out date', phase: 'Terminal', date: dateAt(start, extYrs, 8, 6, 30), anchored: false, yr: String(8 + extYrs), badge: 'warn', note: 'Appointment ends if tenure not granted.' },
+    { milestone: '4th year review',                                    phase: 'Review',       date: new Date(y + 4, 4, 31),               anchored: true,  yr: '4',                badge: 'key',  note: 'Anchored to hire date — not affected by extensions.' },
+    { milestone: 'Department vote',                                     phase: 'Preparation',  date: dateAt(start, extYrs, 5, 10, 1),      anchored: false, yr: String(5 + extYrs), badge: '',     note: '' },
+    { milestone: 'Candidate nominations with dept. vote to Vice Dean',  phase: 'Preparation',  date: dateAt(start, extYrs, 5, 12, 1),      anchored: false, yr: String(5 + extYrs), badge: '',     note: 'Dept. vote transmitted to Vice Dean.' },
+    { milestone: 'Full dossier solicitation materials to Vice Dean',    phase: 'Preparation',  date: dateAt(start, extYrs, 6, 2, 1),       anchored: false, yr: String(6 + extYrs), badge: '',     note: '' },
+    { milestone: 'Vice Dean letter solicitation',                       phase: 'Preparation',  date: dateAt(start, extYrs, 6, 3, 1),       anchored: false, yr: String(6 + extYrs), badge: '',     note: '' },
+    { milestone: 'Dept. COAP review',                                   phase: 'Stage 1',      date: dateAt(start, extYrs, 6, 6, 1),       anchored: false, yr: String(6 + extYrs), badge: '',     note: 'Jun–Aug window.' },
+    { milestone: 'Mailman COAP review',                                 phase: 'Stage 2',      date: dateAt(start, extYrs, 6, 9, 1),       anchored: false, yr: String(6 + extYrs), badge: '',     note: 'Requires Stage 1 approval.' },
+    { milestone: 'CUIMC COAP review',                                   phase: 'Stage 2',      date: dateAt(start, extYrs, 6, 11, 1),      anchored: false, yr: String(6 + extYrs), badge: '',     note: '' },
+    { milestone: 'Dossier to TRAC',                                     phase: 'Stage 3',      date: dateAt(start, extYrs, 6, 12, 15),     anchored: false, yr: String(6 + extYrs), badge: '',     note: 'Forwarded by OFA after CUIMC COAP.' },
+    { milestone: 'TRAC review complete',                                phase: 'Stage 3',      date: dateAt(start, extYrs, 7, 5, 31),      anchored: false, yr: String(7 + extYrs), badge: '',     note: '' },
+    { milestone: 'Tenure effective (if approved)',                       phase: 'Promotion',    date: dateAt(start, extYrs, 7, 7, 1),       anchored: false, yr: String(7 + extYrs), badge: 'key',  note: 'July 1 following Provost/Trustees approval.' },
+    { milestone: 'Up-or-out date',                                      phase: 'Terminal',     date: dateAt(start, extYrs, 8, 6, 30),      anchored: false, yr: String(8 + extYrs), badge: 'warn', note: 'Appointment ends if tenure not granted.' },
   ];
 }
 
@@ -431,7 +466,7 @@ function renderDeptOutput() {
   const out = document.getElementById('dept-output');
   if (!valid.length) { out.innerHTML = ''; return; }
   const now = new Date();
-  const keyMs = ['4th year review', 'Department vote', 'Dossier to SVP', 'Tenure effective (if approved)', 'Up-or-out date'];
+  const keyMs = ['4th year review', 'Department vote', 'Mailman COAP review', 'Tenure effective (if approved)', 'Up-or-out date'];
   const headerCols = keyMs.map(m => `<th>${m}</th>`).join('');
   const bodyRows = valid.map(p => {
     const start = new Date(p.start + 'T12:00:00');
@@ -464,7 +499,7 @@ function renderDeptOutput() {
 function exportDeptPDF() {
   const valid = deptPeople.filter(p => p.name && p.start);
   if (!valid.length) return;
-  const keyMs = ['4th year review', 'Department vote', 'Dossier to SVP', 'Tenure effective (if approved)', 'Up-or-out date'];
+  const keyMs = ['4th year review', 'Department vote', 'Mailman COAP review', 'Tenure effective (if approved)', 'Up-or-out date'];
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'letter' });
   doc.setFontSize(13); doc.setFont(undefined, 'bold');
@@ -487,7 +522,7 @@ function exportDeptPDF() {
 function exportDeptCSV() {
   const valid = deptPeople.filter(p => p.name && p.start);
   if (!valid.length) return;
-  const keyMs = ['4th year review', 'Department vote', 'Dossier to SVP', 'Tenure effective (if approved)', 'Up-or-out date'];
+  const keyMs = ['4th year review', 'Department vote', 'Mailman COAP review', 'Tenure effective (if approved)', 'Up-or-out date'];
   const rows = [['Faculty member', 'Start date', 'Extension (yrs)', ...keyMs]];
   valid.forEach(p => {
     const start = new Date(p.start + 'T12:00:00');
